@@ -73,7 +73,7 @@ int get_cpu(){
 }
 
 int get_freq(int cpu) {
-  char filename[50];
+  char filename[70];
   sprintf(filename,"/sys/devices/system/cpu/cpu%d/cpufreq/scaling_cur_freq",cpu);
   FILE* file;
   file=fopen(filename,"r");
@@ -103,7 +103,7 @@ int main ( int argc, char **argv ) {
 
 
   printf("Vector size appears to be %dbits\n"
-         "Experimenting with %d data points\nAVX_COUNT %d\n",
+         "Experimenting with %ld data points\nAVX_COUNT %d\n",
          VSIZEb, N,AVX_COUNT);
   //tipo vettoriale per inizializzare ! 
   register vd vec2_a = {0};
