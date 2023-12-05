@@ -89,7 +89,7 @@ int main ( int argc, char **argv ) {
   //  printf("Base freq: %d\n",cpuInfo[0]);
   printf("Running on core %d\n",get_cpu());
   int exp = (argc > 1 ? atoi(*(argv+1)) : 2);
-  size_t N = pow(10,exp);
+  size_t N = pow(2,exp);
   struct timeval start_time;
   struct timeval end_time;
   printf("Vector size appears to be %dbits\n"
@@ -103,20 +103,17 @@ int main ( int argc, char **argv ) {
   register vd vec1_a = {4,4,5,6};
   printf("Sizeof vd %d\n",sizeof(vd));
   //  vd* data=calloc(sizeof(vd),N);
-    vd* data=aligned_alloc(sizeof(vd),N*sizeof(vd));
+  vd* data=aligned_alloc(sizeof(vd),N*sizeof(vd));
   printf("Allocated %f GB\n",sizeof(vd)*N/(1E9));
 
 
   //touch memory and warm TLB !
   gettimeofday(&start_time, NULL);
-
-
-
-  
   for(register size_t i=0; i<N/SIZE;++i) {
      data[i]=vec1_a;
    }
   gettimeofday(&end_time, NULL);
+
   double elapsed= (end_time.tv_sec - start_time.tv_sec) +
     (end_time.tv_usec - start_time.tv_usec) / 1000000.0;
   printf("First touch lapsed time: %f s\n",elapsed);
@@ -128,10 +125,10 @@ int main ( int argc, char **argv ) {
 
   for(register size_t i = 0; i < N/(AVX_COUNT*SIZE); i=i+AVX_COUNT ) {
     //to exploit the first AVX
-    vec1_a+=data[i];
+    data[i]=vec1_a;
     //and exploit also the second units ! if we comment out the next line, the execution time doesn't change
 #if AVX_COUNT == 2
-    vec2_a=data[i+1];
+    data[i+1]=vec2_a;
 #endif
   }
     gettimeofday(&end_time, NULL);
