@@ -79,11 +79,6 @@ int get_freq(int cpu) {
   file=fopen(filename,"r");
   int i = 0;
   fscanf (file, "%d", &i);
-  //  while (!feof (file))
-  //  {
-  //    printf ("%d ", i);
-  //    fscanf (file, "%d", &i);
-  //  }
   fclose (file);
   return i;
   
