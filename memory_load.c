@@ -78,11 +78,6 @@ int get_freq(int cpu) {
   file=fopen(filename,"r");
   int i = 0;
   fscanf (file, "%d", &i);
-  //  while (!feof (file))
-  //  {
-  //    printf ("%d ", i);
-  //    fscanf (file, "%d", &i);
-  //  }
   fclose (file);
   return i;
   
@@ -93,8 +88,6 @@ int main ( int argc, char **argv ) {
   //  __cpuid( 0x16, cpuInfo[0], cpuInfo[1], cpuInfo[2], cpuInfo[3]);
   //  printf("Base freq: %d\n",cpuInfo[0]);
   printf("Running on core %d\n",get_cpu());
-  printf("Cur freq: %d\n",get_freq(get_cpu()));
-
   int exp = (argc > 1 ? atoi(*(argv+1)) : 2);
   size_t N = pow(10,exp);
   struct timeval start_time;
@@ -106,19 +99,34 @@ int main ( int argc, char **argv ) {
   //tipo vettoriale per inizializzare !
 
 
-  register vd vec2_a = {0};
-  register vd vec1_a = {4};
+  register vd vec2_a = {0,1,2,3};
+  register vd vec1_a = {4,4,5,6};
   printf("Sizeof vd %d\n",sizeof(vd));
-  vd* data=malloc(sizeof(vd)*N);
-  printf("Allocating %f GB\n",sizeof(vd)*N/(1E9));
+  //  vd* data=calloc(sizeof(vd),N);
+    vd* data=aligned_alloc(sizeof(vd),N*sizeof(vd));
+  printf("Allocated %f GB\n",sizeof(vd)*N/(1E9));
 
-  //for(register size_t i=0; i<N/SIZE;++i) {
-  //  data[i]=vec1_a;
-  //}
-  
 
+  //touch memory and warm TLB !
   gettimeofday(&start_time, NULL);
-  for(register size_t i = 0; i < N/AVX_COUNT; i=i+AVX_COUNT ) {
+
+
+
+  
+  for(register size_t i=0; i<N/SIZE;++i) {
+     data[i]=vec1_a;
+   }
+  gettimeofday(&end_time, NULL);
+  double elapsed= (end_time.tv_sec - start_time.tv_sec) +
+    (end_time.tv_usec - start_time.tv_usec) / 1000000.0;
+  printf("First touch lapsed time: %f s\n",elapsed);
+  double BW = sizeof(vd)*N/(1E9)/elapsed;
+  printf("Bandwidth %f GB/s\n", BW);
+  
+  printf("Begin second touch\n");
+  gettimeofday(&start_time, NULL);
+
+  for(register size_t i = 0; i < N/(AVX_COUNT*SIZE); i=i+AVX_COUNT ) {
     //to exploit the first AVX
     data[i]=vec1_a;
     //and exploit also the second units ! if we comment out the next line, the execution time doesn't change
@@ -126,14 +134,21 @@ int main ( int argc, char **argv ) {
     data[i+1]=vec2_a;
 #endif
   }
-  gettimeofday(&end_time, NULL);
-  printf("Cur freq: %f Ghz\n",get_freq(get_cpu())/1E6);
-  double elapsed= (end_time.tv_sec - start_time.tv_sec) +
+    gettimeofday(&end_time, NULL);
+   elapsed= (end_time.tv_sec - start_time.tv_sec) +
     (end_time.tv_usec - start_time.tv_usec) / 1000000.0;
   printf("Elapsed time: %f s\n",elapsed);
   //calculate the true performance 
-  double BW= sizeof(vd)*N/(1E9)/elapsed;
+  BW = sizeof(vd)*N/(1E9)/elapsed;
   printf("Bandwidth %f GB/s\n", BW);
+  printf("Cur freq: %f Ghz\n",get_freq(get_cpu())/1E6);
 
+
+  //fool the compiler
+
+  //for(register size_t i = 0; i < SIZE; ++i ) {
+  //  vec1_a=data[i];
+  //}
+  //printf("%f\n",vec1_a);
   return 0;
 }
