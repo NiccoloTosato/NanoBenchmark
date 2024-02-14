@@ -1,5 +1,5 @@
 # makefile
-CC = clang
+CC = gcc
 CFLAGS = -Wall -Wextra 
 LDFLAGS = -lm
 

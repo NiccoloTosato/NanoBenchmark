@@ -93,6 +93,7 @@ int main ( int argc, char **argv ) {
 
   int exp = (argc > 1 ? atoi(*(argv+1)) : 2 );
   size_t N = pow(10,exp);
+//#define N 10000000000L
   struct timeval start_time;
   struct timeval end_time;
 
@@ -107,6 +108,9 @@ int main ( int argc, char **argv ) {
   register vd vec1_a = {4};
   register vd vec1_b = {5};
   register vd vec1_c = {6};
+  vd vec1_final = {0};
+  vd vec2_final = {0};
+  
   //ud* udata = NULL;
   //udata = (ud*) &results;
   gettimeofday(&start_time, NULL);
@@ -118,6 +122,11 @@ int main ( int argc, char **argv ) {
     vec2_c=vec2_a+vec2_b;
 #endif
   }
+
+  vec1_final=vec1_c;
+#if AVX_COUNT == 2
+    vec2_final=vec2_c;
+#endif
   printf("Cur freq: %f Ghz\n",get_freq(get_cpu())/1E6);
 
   gettimeofday(&end_time, NULL);
